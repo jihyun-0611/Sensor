@@ -19,13 +19,14 @@ const { width, height } = Dimensions.get("window");
 
 export default function App() {
   const [tab, setTab] = useState("상태");
+  const [guideData, setGuideData] = useState(null);
 
-  const guideData = {
-    temperature_n: 8,
-    temperature_higher: "높음",
-    humidity_n: 10,
-    humidity_higher: "낮음",
-  };
+  // const guideData = {
+  //   temperature_n: 8,
+  //   temperature_higher: "높음",
+  //   humidity_n: 10,
+  //   humidity_higher: "낮음",
+  // };
   const sensorData = {
     labels: ["11시 ", "13시", "15시", "now"],
     datasets: [
@@ -61,13 +62,15 @@ export default function App() {
 
         const data = await response.json();
         console.log(data); // Do something with the response data
+        setGuideData(data);
       } catch (error) {
         console.error(error);
       }
     };
-    const intervalId = setInterval(fetchState, 1 * 60 * 1000); // Execute fetchData every 10 minutes
+    // const intervalId = setInterval(fetchState, 1 * 60 * 1000); // Execute fetchData every 10 minutes
 
-    return () => clearInterval(intervalId); // Clear the interval on component unmount
+    // return () => clearInterval(intervalId); // Clear the interval on component unmount
+    fetchState();
   }, []);
   return (
     <View style={styles.container}>
