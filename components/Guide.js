@@ -34,7 +34,7 @@ export default function Guide({ data }) {
             {data.temperature_higher}
           </Text>
           <Text>
-            추천습도보가 현재습도가 {data.humidity_n}% {data.humidity_higher}
+            추천습도보다 현재습도가 {data.humidity_n}% {data.humidity_higher}
           </Text>
         </View>
       </View>

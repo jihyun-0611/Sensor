@@ -20,29 +20,31 @@ const { width, height } = Dimensions.get("window");
 export default function App() {
   const [tab, setTab] = useState("상태");
   const [guideData, setGuideData] = useState(null);
+  const [labels, setLabels] = useState([[], [], []]);
+  const [datasets, setDatasets] = useState([[], [], []]);
 
-  // const guideData = {
-  //   temperature_n: 8,
-  //   temperature_higher: "높음",
-  //   humidity_n: 10,
-  //   humidity_higher: "낮음",
-  // };
   const sensorData = {
-    labels: ["11시 ", "13시", "15시", "now"],
+    labels: labels[0],
     datasets: [
       {
-        data: [20, 15, 28, 30],
+        data: datasets[0],
         color: (opacity = 1) => `rgba(249, 161, 74, ${opacity})`,
         strokeWidth: 3, // optional
       },
       {
-        data: [25, 26, 24, 23],
+        data: datasets[1],
         color: (opacity = 1) => `rgba(250, 105, 136, ${opacity})`,
         strokeWidth: 3,
       },
+      {
+        data: datasets[2],
+        color: (opacity = 1) => `rgba(30, 179, 40, ${opacity})`,
+        strokeWidth: 3,
+      },
     ],
-    legend: ["습도", "온도"],
+    legend: ["습도", "온도", "토양습도"],
   };
+
   useEffect(() => {
     const fetchState = async () => {
       try {
@@ -61,22 +63,70 @@ export default function App() {
         }
 
         const data = await response.json();
-        console.log(data); // Do something with the response data
+        console.log(data);
         setGuideData(data);
       } catch (error) {
         console.error(error);
       }
     };
-    // const intervalId = setInterval(fetchState, 1 * 60 * 1000); // Execute fetchData every 10 minutes
 
-    // return () => clearInterval(intervalId); // Clear the interval on component unmount
+    const fetchSensor = async () => {
+      try {
+        const response = await fetch(
+          "http://ec2-13-124-158-120.ap-northeast-2.compute.amazonaws.com:3000/graph",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Request failed");
+        }
+
+        const data = await response.json();
+        const convertedLabels = [];
+        const convertedDatasets = [];
+        data.forEach((item) => {
+          const convertedItemLabels = item.labels.map((timestamp) => {
+            const date = new Date(timestamp);
+            const time = date.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            });
+            return time;
+          });
+
+          convertedLabels.push(convertedItemLabels);
+          const datasetValues = item.datasets.map((dataset) => dataset.data);
+          convertedDatasets.push(...datasetValues);
+        });
+
+        console.log("data: ", data);
+        console.log("convertedLabels: ", convertedLabels);
+        console.log("convertedDatasets: ", convertedDatasets);
+
+        setLabels(convertedLabels);
+        setDatasets(convertedDatasets);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     fetchState();
+    fetchSensor();
+    const intervalId = setInterval(fetchState, 1 * 60 * 1000); // Execute fetchData every 10 minutes
+
+    return () => clearInterval(intervalId); // Clear the interval on component unmount
   }, []);
   return (
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
-          <Text style={styles.title}>식물</Text>
+          <Text style={styles.title}>강낭콩</Text>
         </View>
         <View
           style={{
